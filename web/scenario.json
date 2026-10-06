@@ -1,0 +1,196 @@
+{
+ "service": "drug-discovery-workspace",
+ "run": "demo-1",
+ "tokens": {
+  "lead": "lab-lead-demo",
+  "scientist": "lab-scientist-demo",
+  "viewer": "lab-viewer-demo"
+ },
+ "steps": [
+  {
+   "title": "Register a library and train the first model",
+   "say": "About 10,000 small molecules, each a real structure (canonical SMILES, InChIKey, RDKit descriptors), one invented kinase target with a hidden binding rule, and 300 compounds already measured in a biochemical assay. The first model: five gradient-boosted regressors on fingerprints and descriptors, tested on a held-out fifth against the nearest-neighbour baseline, with its uncertainty rescaled so the 90% band is honest.",
+   "calls": [
+    {
+     "key": "load",
+     "as": "lead",
+     "method": "POST",
+     "path": "/v1/library:load",
+     "body": {
+      "seed": 17
+     }
+    },
+    {
+     "key": "train1",
+     "as": "lead",
+     "method": "POST",
+     "path": "/v1/models/train"
+    }
+   ]
+  },
+  {
+   "title": "Register new compounds and compute their properties",
+   "say": "A chemist registers three SMILES: a new aryl sulfonamide, a structure already in the library (ignored by InChIKey), and a string that is not a molecule (refused). Then physicochemical properties, computed by RDKit, not predicted.",
+   "calls": [
+    {
+     "key": "reg",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/compounds",
+     "body": {
+      "smiles": [
+       "Nc1ccc(S(=O)(=O)N)cc1C(F)(F)F",
+       "Oc1cccnc1",
+       "C1CC(("
+      ],
+      "source": "chemist upload"
+     }
+    },
+    {
+     "key": "props",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/predict/properties",
+     "body": {
+      "smiles": [
+       "Nc1ccc(S(=O)(=O)N)cc1C(F)(F)F",
+       "Oc1cccnc1"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "title": "Predict affinity, with a band and the neighbours",
+   "say": "The new compound and two from the library: predicted pIC50 with a 90% band, the model version, and the three most similar measured compounds with their values. The nearest neighbours are the evidence a chemist checks the model against.",
+   "calls": [
+    {
+     "key": "aff",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/predict/target-affinity",
+     "body": {
+      "compound_ids": [
+       "aec13d13-cbec-59ed-a841-3b618c25788b",
+       "1aeddee7-1df7-50a4-bf01-0e09f3a7ec39"
+      ],
+      "smiles": [
+       "Nc1ccc(S(=O)(=O)N)cc1C(F)(F)F"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "title": "Pick the next 96 for the plate",
+   "say": "Active learning: score each unmeasured compound by predicted affinity plus its uncertainty, take the best that is not too similar to anything already picked, stop at 96 or the budget (compounds in stock cost 1, ones to be made cost 5). Beside it, pure exploitation and random. The hidden truth says how many actives each would find. The proposal needs a lead's approval; the scientist who made it cannot approve it.",
+   "calls": [
+    {
+     "key": "prop",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/experiments/propose",
+     "body": {
+      "hypothesis": "Aryl sulfonamides with a free aniline bind RBK1; test the series breadth and the trifluoromethyl question",
+      "plate_size": 96,
+      "budget": 200,
+      "kappa": 1.0
+     }
+    },
+    {
+     "key": "deny",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/experiments/{{prop.experiment_id}}/approve",
+     "expect_error": true
+    },
+    {
+     "key": "ok",
+     "as": "lead",
+     "method": "POST",
+     "path": "/v1/experiments/{{prop.experiment_id}}/approve"
+    }
+   ]
+  },
+  {
+   "title": "The plate comes back; the model updates",
+   "say": "The lab returns the plate (simulated here: hidden truth plus assay noise, stored through the same path as an upload). Two manual results are uploaded as well, one of them twice. Then a second model version is trained on everything, with its own held-out report beside the first.",
+   "calls": [
+    {
+     "key": "plate",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/experiments/{{prop.experiment_id}}/results:simulate"
+    },
+    {
+     "key": "manual",
+     "as": "scientist",
+     "method": "POST",
+     "path": "/v1/assays/4fdb06a5-859c-5bd4-af0c-9802ab08273e/measurements",
+     "body": {
+      "plate": "MANUAL-01",
+      "measurements": [
+       {
+        "compound_id": "aec13d13-cbec-59ed-a841-3b618c25788b",
+        "value": 6.1,
+        "qualifier": "=",
+        "replicate": 1,
+        "measured_at": "2026-10-06T09:00:00Z"
+       },
+       {
+        "compound_id": "aec13d13-cbec-59ed-a841-3b618c25788b",
+        "value": 6.3,
+        "qualifier": "=",
+        "replicate": 2,
+        "measured_at": "2026-10-06T09:00:00Z"
+       },
+       {
+        "compound_id": "aec13d13-cbec-59ed-a841-3b618c25788b",
+        "value": 6.1,
+        "qualifier": "=",
+        "replicate": 1,
+        "measured_at": "2026-10-06T09:00:00Z"
+       }
+      ]
+     }
+    },
+    {
+     "key": "train2",
+     "as": "lead",
+     "method": "POST",
+     "path": "/v1/models/train"
+    }
+   ]
+  },
+  {
+   "title": "Trace a recommendation",
+   "say": "The top compound on the plate: its prediction and band, the model version with its calibration, its own measurements now, the five nearest measured neighbours, and the substructures that move the prediction most. Then the target's evidence page: measurements, model versions, the activity cliffs in the data.",
+   "calls": [
+    {
+     "key": "trace",
+     "as": "viewer",
+     "method": "GET",
+     "path": "/v1/compounds/{{prop.items.0.compound_id}}/trace"
+    },
+    {
+     "key": "evid",
+     "as": "viewer",
+     "method": "GET",
+     "path": "/v1/targets/6aea5d61-b720-51e2-a5e4-5e26b588fe2a/evidence"
+    }
+   ]
+  },
+  {
+   "title": "The audit trail",
+   "say": "Who loaded the library, registered compounds, proposed and approved the experiment, uploaded results and trained each model version: recorded in a log that cannot be edited.",
+   "calls": [
+    {
+     "key": "audit",
+     "as": "lead",
+     "method": "GET",
+     "path": "/v1/audit?limit=12"
+    }
+   ]
+  }
+ ]
+}

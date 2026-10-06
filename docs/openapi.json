@@ -1,0 +1,1258 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "drug-discovery-workspace",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/v1/jobs/{job_id}": {
+   "get": {
+    "tags": [
+     "platform"
+    ],
+    "summary": "Status, attempts and result of a long-running job",
+    "operationId": "job_status_v1_jobs__job_id__get",
+    "parameters": [
+     {
+      "name": "job_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Job Id"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/jobs": {
+   "get": {
+    "tags": [
+     "platform"
+    ],
+    "summary": "Jobs by status; status=dead is the dead-letter view",
+    "operationId": "job_list_v1_jobs_get",
+    "parameters": [
+     {
+      "name": "status",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "string",
+       "default": "dead",
+       "title": "Status"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/audit": {
+   "get": {
+    "tags": [
+     "platform"
+    ],
+    "summary": "Latest audit events and whether the hash chain verifies",
+    "operationId": "audit_log_v1_audit_get",
+    "parameters": [
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "default": 50,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/library:load": {
+   "post": {
+    "tags": [
+     "library"
+    ],
+    "summary": "(+) Register a synthetic library of about 10,000 real molecules, one target, one assay and 300 measured compounds",
+    "operationId": "load_library_v1_library_load_post",
+    "parameters": [
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoadIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/compounds": {
+   "post": {
+    "tags": [
+     "compounds"
+    ],
+    "summary": "Register compounds by SMILES: canonicalised, deduplicated by InChIKey, descriptors computed",
+    "operationId": "compounds_v1_compounds_post",
+    "parameters": [
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CompoundsIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/assays/{assay_id}/measurements": {
+   "post": {
+    "tags": [
+     "assays"
+    ],
+    "summary": "Upload assay results for a plate; a result already stored for that compound, replicate and plate is ignored. Marks the proposed experiment measured",
+    "operationId": "measurements_v1_assays__assay_id__measurements_post",
+    "parameters": [
+     {
+      "name": "assay_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Assay Id"
+      }
+     },
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MeasurementsIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/predict/properties": {
+   "post": {
+    "tags": [
+     "predict"
+    ],
+    "summary": "Physicochemical properties by RDKit: computed from the structure, not predicted",
+    "operationId": "properties_v1_predict_properties_post",
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SmilesIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/models/train": {
+   "post": {
+    "tags": [
+     "models"
+    ],
+    "summary": "(+) Train a new affinity model version on every measurement so far, report calibration on a held-out split and against the k-nearest-neighbour baseline, and write predictions for the whole library",
+    "operationId": "train_v1_models_train_post",
+    "parameters": [
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/predict/target-affinity": {
+   "post": {
+    "tags": [
+     "predict"
+    ],
+    "summary": "Predicted pIC50 with a 90% band for registered compounds or new SMILES, with the model version and the nearest measured neighbours",
+    "operationId": "affinity_v1_predict_target_affinity_post",
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AffinityIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/active-learning/batch": {
+   "post": {
+    "tags": [
+     "active learning"
+    ],
+    "summary": "Select the next plate: upper-confidence scores with diversity and a cost cap; compared with pure exploitation and random",
+    "operationId": "batch_v1_active_learning_batch_post",
+    "parameters": [
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/BatchIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/experiments/propose": {
+   "post": {
+    "tags": [
+     "experiments"
+    ],
+    "summary": "Propose the next assay plate as an experiment: the selection, its rationale per compound, the budget; a lead approves before plates are made",
+    "operationId": "propose_v1_experiments_propose_post",
+    "parameters": [
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ProposeIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/experiments/{experiment_id}/approve": {
+   "post": {
+    "tags": [
+     "experiments"
+    ],
+    "summary": "(+) A lead approves a proposed experiment",
+    "operationId": "approve_v1_experiments__experiment_id__approve_post",
+    "parameters": [
+     {
+      "name": "experiment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Experiment Id"
+      }
+     },
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/experiments/{experiment_id}/results:simulate": {
+   "post": {
+    "tags": [
+     "experiments"
+    ],
+    "summary": "(+ demo only) The lab returns the plate: the generator's hidden values plus assay noise, stored through the same path as an upload",
+    "operationId": "simulate_results_v1_experiments__experiment_id__results_simulate_post",
+    "parameters": [
+     {
+      "name": "experiment_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Experiment Id"
+      }
+     },
+     {
+      "name": "Idempotency-Key",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Idempotency-Key"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/targets/{target_id}/evidence": {
+   "get": {
+    "tags": [
+     "targets"
+    ],
+    "summary": "Everything known about the target: measurements, actives, model versions with calibration, the top predicted candidates, and activity cliffs in the data",
+    "operationId": "evidence_v1_targets__target_id__evidence_get",
+    "parameters": [
+     {
+      "name": "target_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Target Id"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/v1/compounds/{compound_id}/trace": {
+   "get": {
+    "tags": [
+     "compounds"
+    ],
+    "summary": "(+) Why a compound is recommended: prediction and band, the model version and its calibration, the measured neighbours, and the substructures that move the prediction",
+    "operationId": "trace_v1_compounds__compound_id__trace_get",
+    "parameters": [
+     {
+      "name": "compound_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Compound Id"
+      }
+     },
+     {
+      "name": "authorization",
+      "in": "header",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Authorization"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {}
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AffinityIn": {
+    "properties": {
+     "compound_ids": {
+      "items": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "type": "array",
+      "maxItems": 200,
+      "title": "Compound Ids",
+      "default": []
+     },
+     "smiles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 50,
+      "title": "Smiles",
+      "default": []
+     }
+    },
+    "type": "object",
+    "title": "AffinityIn"
+   },
+   "BatchIn": {
+    "properties": {
+     "plate_size": {
+      "type": "integer",
+      "maximum": 384.0,
+      "minimum": 8.0,
+      "title": "Plate Size",
+      "default": 96
+     },
+     "budget": {
+      "type": "number",
+      "maximum": 5000.0,
+      "minimum": 8.0,
+      "title": "Budget",
+      "description": "Cost units: 1 for a compound in stock, 5 for one to be made",
+      "default": 200
+     },
+     "kappa": {
+      "type": "number",
+      "maximum": 3.0,
+      "minimum": 0.0,
+      "title": "Kappa",
+      "description": "Weight on uncertainty: 0 exploits, 2 explores",
+      "default": 1.0
+     },
+     "max_similarity": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.3,
+      "title": "Max Similarity",
+      "default": 0.7
+     }
+    },
+    "type": "object",
+    "title": "BatchIn"
+   },
+   "CompoundsIn": {
+    "properties": {
+     "smiles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 1000,
+      "minItems": 1,
+      "title": "Smiles"
+     },
+     "source": {
+      "type": "string",
+      "maxLength": 40,
+      "title": "Source",
+      "default": "upload"
+     }
+    },
+    "type": "object",
+    "required": [
+     "smiles"
+    ],
+    "title": "CompoundsIn"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "LoadIn": {
+    "properties": {
+     "seed": {
+      "type": "integer",
+      "maximum": 1000000.0,
+      "minimum": 0.0,
+      "title": "Seed",
+      "default": 17
+     }
+    },
+    "type": "object",
+    "title": "LoadIn"
+   },
+   "MeasurementIn": {
+    "properties": {
+     "compound_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Compound Id"
+     },
+     "value": {
+      "type": "number",
+      "maximum": 12.0,
+      "minimum": 3.0,
+      "title": "Value"
+     },
+     "qualifier": {
+      "type": "string",
+      "pattern": "^[=<>]$",
+      "title": "Qualifier",
+      "default": "="
+     },
+     "replicate": {
+      "type": "integer",
+      "maximum": 10.0,
+      "minimum": 1.0,
+      "title": "Replicate"
+     },
+     "measured_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Measured At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "compound_id",
+     "value",
+     "replicate",
+     "measured_at"
+    ],
+    "title": "MeasurementIn"
+   },
+   "MeasurementsIn": {
+    "properties": {
+     "plate": {
+      "type": "string",
+      "maxLength": 30,
+      "title": "Plate"
+     },
+     "measurements": {
+      "items": {
+       "$ref": "#/components/schemas/MeasurementIn"
+      },
+      "type": "array",
+      "maxItems": 2000,
+      "minItems": 1,
+      "title": "Measurements"
+     }
+    },
+    "type": "object",
+    "required": [
+     "plate",
+     "measurements"
+    ],
+    "title": "MeasurementsIn"
+   },
+   "ProposeIn": {
+    "properties": {
+     "plate_size": {
+      "type": "integer",
+      "maximum": 384.0,
+      "minimum": 8.0,
+      "title": "Plate Size",
+      "default": 96
+     },
+     "budget": {
+      "type": "number",
+      "maximum": 5000.0,
+      "minimum": 8.0,
+      "title": "Budget",
+      "description": "Cost units: 1 for a compound in stock, 5 for one to be made",
+      "default": 200
+     },
+     "kappa": {
+      "type": "number",
+      "maximum": 3.0,
+      "minimum": 0.0,
+      "title": "Kappa",
+      "description": "Weight on uncertainty: 0 exploits, 2 explores",
+      "default": 1.0
+     },
+     "max_similarity": {
+      "type": "number",
+      "maximum": 1.0,
+      "minimum": 0.3,
+      "title": "Max Similarity",
+      "default": 0.7
+     },
+     "hypothesis": {
+      "type": "string",
+      "maxLength": 300,
+      "minLength": 5,
+      "title": "Hypothesis"
+     }
+    },
+    "type": "object",
+    "required": [
+     "hypothesis"
+    ],
+    "title": "ProposeIn"
+   },
+   "SmilesIn": {
+    "properties": {
+     "smiles": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Smiles"
+     }
+    },
+    "type": "object",
+    "required": [
+     "smiles"
+    ],
+    "title": "SmilesIn"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   }
+  }
+ }
+}
